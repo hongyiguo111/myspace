@@ -3,11 +3,10 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-3">
-                    <img src="https://cdn.acwing.com/media/user/profile/photo/504252_lg_f82193bb5a.png"
-                        class="img-fluid" alt="">
+                    <img :src="user.photo" class="img-fluid" alt="">
                 </div>
                 <div class="col-9">
-                    <div>{{ fullName }}</div>
+                    <div>{{ user.username }}</div>
                     <div>粉丝数：{{ user.followerCount }}</div>
                     <button @click="follow" v-if="!user.is_followed" type="button"
                         class="btn btn-secondary btn-small">+关注</button>
@@ -21,7 +20,8 @@
 </template>
 
 <script>
-import { computed } from 'vue';
+import $ from 'jquery';
+import { useStore } from 'vuex';
 
 export default {
     name: 'UserProfileInfo',
@@ -32,22 +32,44 @@ export default {
         }
     },
     setup(props, context) {
-        let fullName = computed(() => {
-            return props.user.firstname + ' ' + props.user.lastname;
-        });
-
+        const store = useStore();
         const follow = () => {
-            // 关注逻辑
-            context.emit('follow');
+            $.ajax({
+                url: 'https://app165.acapp.acwing.com.cn/myspace/follow/',
+                type: 'POST',
+                data: {
+                    target_id: props.user.id
+                },
+                headers: {
+                    'Authorization': 'Bearer ' + store.state.user.access
+                },
+                success(resp) {
+                    if (resp.result === "success") {
+                        context.emit('follow');
+                    }
+                }
+            });
         };
 
         const unfollow = () => {
-            // 取消关注逻辑
-            context.emit('unfollow');
+            $.ajax({
+                url: 'https://app165.acapp.acwing.com.cn/myspace/follow/',
+                type: 'POST',
+                data: {
+                    target_id: props.user.id
+                },
+                headers: {
+                    'Authorization': 'Bearer ' + store.state.user.access
+                },
+                success(resp) {
+                    if (resp.result === "success") {
+                        context.emit('unfollow');
+                    }
+                }
+            });
         };
 
         return {
-            fullName,
             follow,
             unfollow
         }
